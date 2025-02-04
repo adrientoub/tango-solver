@@ -1,3 +1,11 @@
+TANGO_SIZE = 6
+LINE_SIZE = TANGO_SIZE * 2 - 1
+
+if TANGO_SIZE % 2 != 0 || TANGO_SIZE <= 2
+  $stderr.puts "TANGO_SIZE must be an even number greater than 2"
+  exit 1
+end
+
 def print_data(data, original_data)
   data.each_with_index do |line, i|
     line.split('').each_with_index do |c, j|
@@ -12,9 +20,9 @@ def print_data(data, original_data)
 end
 
 def validate_line(line)
-  if line.count('S') > 3
+  if line.count('S') > TANGO_SIZE / 2
     return false
-  elsif line.count('M') > 3
+  elsif line.count('M') > TANGO_SIZE / 2
     return false
   elsif line.include?('SxS') || line.include?('MxM') || line.include?('S=M') || line.include?('M=S')
     return false
@@ -26,13 +34,13 @@ def validate_line(line)
 end
 
 def validate_data(data)
-  if data.size != 11
-    puts "Invalid data: only #{data.size} lines"
+  if data.size != LINE_SIZE
+    puts "Invalid data: #{data.size} lines instead of #{LINE_SIZE}"
     return false
   end
-  data.each do |line|
-    if line.size != 11
-      puts "Invalid data: line has #{line.size} characters"
+  data.each_with_index do |line, i|
+    if line.size != LINE_SIZE
+      puts "Invalid data: line #{i + 1} has #{line.size} characters instead of #{LINE_SIZE}"
       return false
     end
   end
@@ -43,7 +51,7 @@ def validate_data(data)
     end
   end
 
-  (0..5).each do |col_id|
+  (0..TANGO_SIZE-1).each do |col_id|
     col = data.map { |line| line[col_id * 2] }.join
     if !validate_line(col)
       return false
@@ -67,15 +75,15 @@ end
 data = original_data.map { |line| line.dup }
 
 def next_data(original_data, i, j)
-  while i < 11 && j < 11 && (original_data[i][j] == 'S' || original_data[i][j] == 'M')
+  while i < LINE_SIZE && j < LINE_SIZE && (original_data[i][j] == 'S' || original_data[i][j] == 'M')
     j += 2
-    if j > 10
+    if j >= LINE_SIZE
       j = 0
       i += 2
     end
   end
 
-  if i == 12
+  if i > LINE_SIZE
     return nil, nil
   end
 
@@ -86,7 +94,7 @@ def prev_data(original_data, i, j)
   while i >= 0 && j >= 0 && (original_data[i][j] == 'S' || original_data[i][j] == 'M')
     j -= 2
     if j < 0
-      j = 10
+      j = LINE_SIZE - 1
       i -= 2
     end
   end
@@ -119,7 +127,7 @@ def solve(data, original_data, solved_grid)
         # go back
         j -= 2
         if j < 0
-          j = 10
+          j = LINE_SIZE - 1
           i -= 2
         end
 
@@ -133,7 +141,7 @@ def solve(data, original_data, solved_grid)
 
     if validate_data(data) && (solved_grid.nil? || data != solved_grid)
       j += 2
-      if j > 10
+      if j >= LINE_SIZE
         j = 0
         i += 2
       end
