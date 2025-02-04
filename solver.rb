@@ -66,9 +66,6 @@ end
 
 data = original_data.map { |line| line.dup }
 
-i = 0
-j = 0
-
 def next_data(original_data, i, j)
   while i < 11 && j < 11 && (original_data[i][j] == 'S' || original_data[i][j] == 'M')
     j += 2
@@ -101,7 +98,7 @@ def prev_data(original_data, i, j)
   return i, j
 end
 
-def solve(data, original_data)
+def solve(data, original_data, solved_grid)
   i = 0
   j = 0
   loop do
@@ -117,7 +114,6 @@ def solve(data, original_data)
     elsif current_value == 'M'
       data[i][j] = '0'
       if i == 0 && j == 0
-        puts "No solution"
         return false
       else
         # go back
@@ -129,14 +125,13 @@ def solve(data, original_data)
 
         i, j = prev_data(original_data, i, j)
         if i.nil?
-          puts "No solution"
           return false
         end
         next
       end
     end
 
-    if validate_data(data)
+    if validate_data(data) && (solved_grid.nil? || data != solved_grid)
       j += 2
       if j > 10
         j = 0
@@ -146,9 +141,19 @@ def solve(data, original_data)
   end
 end
 
-if solve(data, original_data)
+if solve(data, original_data, nil)
   puts "Solution:"
   print_data(data, original_data)
+  solved_grid = data
+
+  data = original_data.map { |line| line.dup }
+
+  if solve(data, original_data, solved_grid)
+    puts "Found a second solution:"
+    print_data(data, solved_grid)
+  else
+    puts "The solution is unique"
+  end
 else
   if data.join.include?('0')
     puts "No solution found"
